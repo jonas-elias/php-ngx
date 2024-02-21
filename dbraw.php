@@ -2,10 +2,11 @@
 
 class DbRaw
 {
-    private static PDO $instance;
+    public static PDO $instance;
     public static PDOStatement $db;
-    public static PDOStatement $fortune;
-    public static PDOStatement $random;
+    public static PDOStatement $statement1;
+    public static PDOStatement $statement2;
+    public static PDOStatement $statement3;
     /**
      * @var []PDOStatement
      */
@@ -13,16 +14,51 @@ class DbRaw
 
     public static function init()
     {
-        $pdo = new PDO(
-            'pgsql:host=db;dbname=rinhadb',
-            'postgre',
-            'postgre',
-            [
-                PDO::ATTR_DEFAULT_FETCH_MODE  => PDO::FETCH_ASSOC,
-                PDO::ATTR_ERRMODE             => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_EMULATE_PREPARES    => false
-            ]
-        );
+        try {
+            
+            $pdo = new PDO(
+                'pgsql:host=db;dbname=rinhadb',
+                'postgre',
+                'postgre',
+                [
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
+    
+            self::$statement1 = $pdo->prepare("CALL inserir_transacao_2(:id, :valor, :tipo, :descricao, :saldo_atualizado, :limite_atualizado)");
+            self::$statement2 = $pdo->prepare("
+                                SELECT 
+                                    clients.limit AS limite, 
+                                    clients.balance, 
+                                    transactions.value, 
+                                    transactions.type, 
+                                    transactions.description, 
+                                    transactions.created_at 
+                                FROM 
+                                    clients 
+                                LEFT JOIN 
+                                    transactions ON clients.id = transactions.client_id 
+                                WHERE 
+                                    clients.id = :id 
+                                ORDER BY 
+                                    transactions.created_at DESC 
+                                LIMIT 
+                                10
+                        ");
+            self::$statement3 = $pdo->prepare("SELECT id from clients where client_id = :client_id FOR UPDATE");
+
+            self::$instance = $pdo;
+        } catch (\Exception $th) {
+            $file = fopen('erro.log', 'a');
+
+            // Escreve a mensagem de erro no arquivo
+            fwrite($file, $th->getMessage() . "\n");
+
+            // Fecha o arquivo
+            fclose($file);
+        }
     }
 
     /**
