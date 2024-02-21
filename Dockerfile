@@ -23,7 +23,7 @@ RUN wget -q http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
     export PHP_LIB=/usr/lib && \
     ./configure --user=www-data --group=www-data \
             --prefix=/nginx \
-            --with-debug \
+            # --with-debug \
             --with-ld-opt="-Wl,-rpath,$PHP_LIB" \
             --add-module=/ngx-php/third_party/ngx_devel_kit \
             --add-module=/ngx-php > /dev/null && \
@@ -31,7 +31,7 @@ RUN wget -q http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
 
 # RUN sed -i "s|app.php|app-pg.php|g" /deploy/nginx.conf
 
-RUN export WORKERS=$(( 2 * $(nproc) )) && \
+RUN export WORKERS=$(( 1 * $(nproc) )) && \
     sed -i "s|worker_processes  auto|worker_processes $WORKERS|g" /deploy/nginx.conf
 RUN sed -i "s|opcache.jit=off|opcache.jit=function|g" /etc/php/8.3/embed/conf.d/10-opcache.ini
 EXPOSE 8080
