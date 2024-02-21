@@ -28,7 +28,7 @@ RUN wget -q http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
             --add-module=/ngx-php > /dev/null && \
     make > /dev/null && make install > /dev/null
 
-RUN sed -i "s|app.php|app-pg.php|g" /deploy/nginx.conf
+# RUN sed -i "s|app.php|app-pg.php|g" /deploy/nginx.conf
 
 RUN export WORKERS=$(( 2 * $(nproc) )) && \
     sed -i "s|worker_processes  auto|worker_processes $WORKERS|g" /deploy/nginx.conf

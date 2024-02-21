@@ -158,16 +158,16 @@ function transacoes()
             return ngx_status(404);
         }
 
-        if (!isset(DbRaw::$statement1) || is_null(DbRaw::$statement1)) {
-            DbRaw::init();
-        }
-
         $saldo = 0;
         $limite = 0;
 
         // DbRaw::$instance->beginTransaction();
         // DbRaw::$statement3->bindParam(':client_id', $id, PDO::PARAM_INT);
         // DbRaw::$statement3->execute();
+
+        if (!isset(DbRaw::$statement1) || is_null(DbRaw::$statement1)) {
+            DbRaw::init();
+        }
 
         DbRaw::$statement1->bindParam(':id', $id, PDO::PARAM_INT);
         DbRaw::$statement1->bindParam(':valor', $transactionData['valor'], PDO::PARAM_INT);
@@ -211,7 +211,7 @@ function extrato()
             return ngx_status(404);
         }
 
-        if (!isset(DbRaw::$statement2) || is_null(DbRaw::$statement1)) {
+        if (!isset(DbRaw::$statement2) || is_null(DbRaw::$statement2)) {
             DbRaw::init();
         }
 
