@@ -3,10 +3,10 @@
 class DbRaw
 {
     public static PDO $instance;
-    public static PDOStatement $db;
-    public static PDOStatement $statement1;
-    public static PDOStatement $statement2;
-    public static PDOStatement $statement3;
+    public static PDOStatement|null $db = null;
+    public static PDOStatement|null $statement1 = null;
+    public static PDOStatement|null $statement2 = null;
+    public static PDOStatement|null $statement3 = null;
     /**
      * @var []PDOStatement
      */
@@ -119,8 +119,6 @@ class DbRaw
     }
 }
 
-DbRaw::init();
-
 function db()
 {
     ngx_header_set('Content-Type', 'application/json');
@@ -160,7 +158,9 @@ function transacoes()
             return ngx_status(404);
         }
 
-
+        if (!isset(DbRaw::$statement1) || is_null(DbRaw::$statement1)) {
+            DbRaw::init();
+        }
 
         $saldo = 0;
         $limite = 0;
@@ -209,6 +209,10 @@ function extrato()
         $id = $parts[2];
         if ($id > 5) {
             return ngx_status(404);
+        }
+
+        if (!isset(DbRaw::$statement2) || is_null(DbRaw::$statement2)) {
+            DbRaw::init();
         }
 
         // DbRaw::$statement2->bindColumn(':id', $id, PDO::PARAM_INT);
