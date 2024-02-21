@@ -211,7 +211,7 @@ function extrato()
             return ngx_status(404);
         }
 
-        if (!isset(DbRaw::$statement2) || is_null(DbRaw::$statement2)) {
+        if (!isset(DbRaw::$statement2) || is_null(DbRaw::$statement1)) {
             DbRaw::init();
         }
 

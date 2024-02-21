@@ -3,10 +3,10 @@
 class DbRaw
 {
     public static PDO $instance;
-    public static PDOStatement $db;
-    public static PDOStatement $statement1;
-    public static PDOStatement $statement2;
-    public static PDOStatement $statement3;
+    public static PDOStatement|null $db = null;
+    public static PDOStatement|null $statement1 = null;
+    public static PDOStatement|null $statement2 = null;
+    public static PDOStatement|null $statement3 = null;
     /**
      * @var []PDOStatement
      */
@@ -119,8 +119,6 @@ class DbRaw
     }
 }
 
-DbRaw::init();
-
 function db()
 {
     ngx_header_set('Content-Type', 'application/json');
@@ -160,7 +158,9 @@ function transacoes()
             return ngx_status(404);
         }
 
-
+        if (!isset(DbRaw::$statement1) || is_null(DbRaw::$statement1)) {
+            DbRaw::init();
+        }
 
         $saldo = 0;
         $limite = 0;
@@ -211,8 +211,12 @@ function extrato()
             return ngx_status(404);
         }
 
-        DbRaw::$statement2->bindColumn(':id', $id, PDO::PARAM_INT);
-        DbRaw::$statement2->execute();
+        if (!isset(DbRaw::$statement2) || is_null(DbRaw::$statement1)) {
+            DbRaw::init();
+        }
+
+        // DbRaw::$statement2->bindColumn(':id', $id, PDO::PARAM_INT);
+        DbRaw::$statement2->execute(['id' => $id]);
 
         $clientWithTransactions = DbRaw::$statement2->fetchAll(PDO::FETCH_ASSOC);
 
@@ -225,18 +229,16 @@ function extrato()
             ];
         }, $clientWithTransactions);
 
-        echo json_encode($clientWithTransactions);
+        $response = [
+            'saldo' => [
+                'total' => $clientWithTransactions[0]['balance'],
+                'data_extrato' => date('c'), // Usando a data atual
+                'limite' => $clientWithTransactions[0]['limite'],
+            ],
+            'ultimas_transacoes' => $transactionsClient,
+        ];
 
-        // $response = [
-        //     'saldo' => [
-        //         'total' => $clientWithTransactions[0]['balance'],
-        //         'data_extrato' => date('c'), // Usando a data atual
-        //         'limite' => $clientWithTransactions[0]['limite'],
-        //     ],
-        //     'ultimas_transacoes' => $transactionsClient,
-        // ];
-
-        // echo json_encode($response);
+        echo json_encode($response);
 
     } catch (\Exception $e) {
         var_dump($e->getMessage());
